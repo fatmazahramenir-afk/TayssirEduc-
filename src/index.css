@@ -1,0 +1,245 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --tayssir-navy: #101D42;
+    --tayssir-blue: #1769E8;
+    --tayssir-purple: #7652D6;
+    --tayssir-white: #FFFFFF;
+    --tayssir-light-gray: #E9EDF5;
+
+    --font-sans: 'IBM Plex Sans Arabic', 'Alexandria', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-display: 'Alexandria', 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    color: #101D42;
+    background-color: #FFFFFF;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+
+  html.dark {
+    color: #F8FAFC;
+    background-color: #080E1E;
+  }
+
+  body {
+    overflow-x: hidden;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Apple-inspired Liquid Glass & Soft Elevation */
+.tayssir-glass {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(16, 29, 66, 0.08);
+  box-shadow: 0 10px 30px -12px rgba(16, 29, 66, 0.08);
+}
+
+.dark .tayssir-glass {
+  background: rgba(16, 29, 66, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.45);
+}
+
+.tayssir-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E9EDF5;
+  box-shadow: 0 4px 20px -6px rgba(16, 29, 66, 0.06);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease;
+}
+
+.dark .tayssir-card {
+  background-color: #101D42;
+  border: 1px solid rgba(233, 237, 245, 0.1);
+  box-shadow: 0 6px 24px -8px rgba(0, 0, 0, 0.4);
+}
+
+.tayssir-surface {
+  background-color: #E9EDF5;
+}
+
+.dark .tayssir-surface {
+  background-color: #0B142E;
+}
+
+/* iPhone-inspired Liquid Glass Panels & Squircle App Icons */
+.tayssir-ios-glass {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.86) 0%, rgba(233, 237, 245, 0.62) 100%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 18px 40px -16px rgba(16, 29, 66, 0.14);
+}
+
+.dark .tayssir-ios-glass {
+  background: linear-gradient(145deg, rgba(23, 38, 82, 0.78) 0%, rgba(12, 20, 44, 0.68) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 20px 44px -16px rgba(0, 0, 0, 0.55);
+}
+
+.tayssir-ios-squircle {
+  border-radius: 24px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.55),
+    0 14px 28px -10px rgba(16, 29, 66, 0.25);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .tayssir-ios-squircle {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 16px 32px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* TAYSSIR Loader Animations (respecting Reduce Motion) */
+@keyframes tayssir-pulse-ring {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.75;
+  }
+}
+
+@keyframes tayssir-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.tayssir-loader-ring {
+  animation: tayssir-pulse-ring 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.tayssir-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.tayssir-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: tayssir-shimmer 1.5s infinite;
+}
+
+.dark .tayssir-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tayssir-loader-ring,
+  .tayssir-skeleton::after {
+    animation: none !important;
+  }
+  .tayssir-card {
+    transition: none !important;
+  }
+}
+
+/* Official Google Sign-In Material Button */
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: none;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #747775;
+  border-radius: 10px;
+  box-sizing: border-box;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  height: 42px;
+  letter-spacing: 0.15px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 14px;
+  position: relative;
+  text-align: center;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: auto;
+  max-width: 400px;
+  min-width: min-content;
+}
+
+.gsi-material-button .gsi-material-button-icon {
+  height: 20px;
+  margin-inline-end: 12px;
+  min-width: 20px;
+  width: 20px;
+}
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: 100%;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  flex-grow: 1;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.gsi-material-button .gsi-material-button-state {
+  transition: opacity 0.2s;
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gsi-material-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.gsi-material-button:not(:disabled):hover {
+  box-shadow: 0 2px 6px rgba(16, 29, 66, 0.15);
+}

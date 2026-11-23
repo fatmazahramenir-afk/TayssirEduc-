@@ -1,0 +1,6 @@
+{
+  "name": "Tayssir Workspace",
+  "description": "Unified Google Workspace and academic operations hub integrating Drive, Sheets, Gmail, Tasks, Chat, Forms, Meet, and Classroom.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

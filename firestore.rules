@@ -1,0 +1,150 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'preferredLocale', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'preferredLocale', 'createdAt', 'updatedAt'])
+        && data.uid is string
+        && data.uid == userId
+        && data.uid == request.auth.uid
+        && data.uid.size() >= 1
+        && data.uid.size() <= 128
+        && data.email is string
+        && data.email.size() >= 3
+        && data.email.size() <= 254
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 120))
+        && data.preferredLocale is string
+        && data.preferredLocale in ['en', 'ar']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidWorkspacePin(data) {
+      return data.keys().hasAll(['ownerId', 'serviceKey', 'resourceId', 'title', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'serviceKey', 'resourceId', 'title', 'url', 'notes', 'createdAt', 'updatedAt'])
+        && data.ownerId is string
+        && data.ownerId == request.auth.uid
+        && data.ownerId.size() >= 1
+        && data.ownerId.size() <= 128
+        && data.serviceKey is string
+        && data.serviceKey in ['drive', 'sheets', 'gmail', 'tasks', 'chat', 'forms', 'meet', 'classroom']
+        && data.resourceId is string
+        && data.resourceId.size() >= 1
+        && data.resourceId.size() <= 256
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 200
+        && (!('url' in data) || (data.url is string && data.url.size() <= 1024))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 2000))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStudyNote(data) {
+      return data.keys().hasAll(['ownerId', 'title', 'content', 'serviceKey', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['ownerId', 'title', 'content', 'serviceKey', 'createdAt', 'updatedAt'])
+        && data.ownerId is string
+        && data.ownerId == request.auth.uid
+        && data.ownerId.size() >= 1
+        && data.ownerId.size() <= 128
+        && data.title is string
+        && data.title.size() >= 1
+        && data.title.size() <= 200
+        && data.content is string
+        && data.content.size() >= 1
+        && data.content.size() <= 8000
+        && data.serviceKey is string
+        && data.serviceKey in ['general', 'drive', 'sheets', 'gmail', 'tasks', 'chat', 'forms', 'meet', 'classroom']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isVerifiedUser()
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'preferredLocale', 'email', 'updatedAt']);
+      allow delete: if isValidId(userId) && isVerifiedUser() && isOwner(userId);
+    }
+
+    match /workspacePins/{pinId} {
+      allow get: if isValidId(pinId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(pinId)
+        && isVerifiedUser()
+        && isValidWorkspacePin(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(pinId)
+        && isVerifiedUser()
+        && existing().ownerId == request.auth.uid
+        && isValidWorkspacePin(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'url', 'notes', 'updatedAt']);
+      allow delete: if isValidId(pinId) && isVerifiedUser() && existing().ownerId == request.auth.uid;
+    }
+
+    match /studyNotes/{noteId} {
+      allow get: if isValidId(noteId) && isSignedIn() && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isValidId(noteId)
+        && isVerifiedUser()
+        && isValidStudyNote(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(noteId)
+        && isVerifiedUser()
+        && existing().ownerId == request.auth.uid
+        && isValidStudyNote(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'serviceKey', 'updatedAt']);
+      allow delete: if isValidId(noteId) && isVerifiedUser() && existing().ownerId == request.auth.uid;
+    }
+  }
+}
